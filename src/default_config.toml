@@ -1,0 +1,26 @@
+## Path to the icons.
+## The program will automatically fetch all missing icons (using wget and
+## inkscape)
+# icon_path = '~/.config/meteoschweiz/icons'
+
+## PLZ of the current location. 
+#location_plz = 8001
+
+## Location for the main template file.
+## If the file does not exist, it will be created by this program.
+#template_file = '~/.config/meteoschweiz/template.tex.tera'
+
+## Location for the long template file.
+## If the file does not exist, it will be created by this program.
+#template_long_file = '~/.config/meteoschweiz/template_long.tex.tera'
+
+## Cache folder
+## This folder is used to cache the results, such that they don't have to be
+## fetched or rendered every time.
+#cache_folder = '~/.cache/meteoschweiz'
+
+## Program to view pdf files
+#pdf_viewer = 'zathura'
+
+## Arguments for the pdf viewer
+#pdf_viewer_args = ['--fork']

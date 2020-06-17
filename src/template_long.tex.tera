@@ -1,0 +1,105 @@
+% Meteoschweiz: Render meteo data from meteoschweiz.admin.ch
+% Copyright (C) 2020  Tibor Schneider
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+\documentclass{standalone}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+
+\pgfplotsset{compat=1.16}
+
+\usepackage{xcolor}
+\definecolor{tempcol}{HTML}{992600}
+\definecolor{raincol}{HTML}{006bb3}
+
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width = 21cm,
+    height = 8cm,
+    ymajorgrids,
+    axis lines = middle,
+    scale only axis,
+    axis y line* = left,
+    axis line style = {thick, -},
+    xmin = 0, xmax=7,
+    ymin = {{ forecast_long.temp_min }}, ymax={{ forecast_long.temp_max }},
+    xtick = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5},
+    xticklabels = { {{ forecast_long.day_labels }} },
+    ylabel = {temperature in $^\circ C$},
+    y label style={at={(axis description cs:-0.02,.5)}, rotate=90, anchor=south, color=tempcol},
+    yticklabel style=tempcol,
+    ytick style={draw=none},
+    xtick style={draw=none},
+    clip=false,
+  ]
+
+    \draw[black!20] (1, {{ forecast_long.temp_min }}) -- (1, {{ forecast_long.temp_max }})
+                    (2, {{ forecast_long.temp_min }}) -- (2, {{ forecast_long.temp_max }})
+                    (3, {{ forecast_long.temp_min }}) -- (3, {{ forecast_long.temp_max }})
+                    (4, {{ forecast_long.temp_min }}) -- (4, {{ forecast_long.temp_max }})
+                    (5, {{ forecast_long.temp_min }}) -- (5, {{ forecast_long.temp_max }})
+                    (6, {{ forecast_long.temp_min }}) -- (6, {{ forecast_long.temp_max }});
+
+    \addplot[draw=tempcol, very thick, smooth] coordinates {
+      {% for t in forecast_long.temperature %}({{ t.time }},{{ t.value }}){% endfor %}
+    };
+    \addplot+[name path=L, draw=none, mark=none, smooth] coordinates {
+      {% for t in forecast_long.temperature %}({{ t.time }},{{ t.low }}){% endfor %}
+    };
+    \addplot+[name path=H, draw=none, mark=none, smooth] coordinates {
+      {% for t in forecast_long.temperature %}({{ t.time }},{{ t.high }}){% endfor %}
+    };
+    \addplot[tempcol, fill opacity=0.2] fill between[of=L and H];
+
+    {% for s in forecast_long.icons %}
+      \node at (axis description cs:{{ s.time / 7 }}, -0.14) {\includegraphics[width=0.6cm] {% raw %}{{% endraw %}{{ s.icon }}{% raw %}}};{% endraw %}
+    {% endfor %}
+
+    \node at (axis description cs:0.5, -0.3) {.};
+
+    \node at (axis description cs:0.5, 1.05) {\textbf{\large 7-Tage Prognose}};
+  \end{axis}
+  \begin{axis}[
+    width = 21cm,
+    height = 8cm,
+    %ybar,
+    axis lines = middle,
+    scale only axis,
+    axis y line* = right,
+    axis x line = none,
+    axis line style = {thick, -},
+    xmin=0, xmax = 7,
+    ymin=0, ymax = {{ forecast_long.rain_max }},
+    ylabel = {rainfall in $mm/h$},
+    y label style={at={(axis description cs:1.02,.5)}, rotate=90, anchor=north, color=raincol},
+    yticklabel style=raincol,
+    clip=true
+  ]
+    \addplot+[name path=RAIN, draw=none, mark=none, smooth] coordinates {
+      {% for r in forecast_long.rainfall %}({{ r.time }},{{ r.value }}){% endfor %}
+    };
+
+    \addplot+[name path=ZERO, draw=none, mark=none] coordinates {
+      (0, 0) (7, 0)
+    };
+
+    \addplot[raincol, fill opacity=0.3] fill between[of=RAIN and ZERO];
+
+  \end{axis}
+\end{tikzpicture}
+\end{document}
